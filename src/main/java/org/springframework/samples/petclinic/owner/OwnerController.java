@@ -15,16 +15,13 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -43,11 +40,21 @@ class OwnerController {
 
 	private final OwnerRepository owners;
 
-	private VisitRepository visits;
+	private final VisitRepository visits;
 
-	public OwnerController(OwnerRepository clinicService, VisitRepository visits) {
+	private final ApplicationContext applicationContext;
+
+	public OwnerController(OwnerRepository clinicService, VisitRepository visits, ApplicationContext applicationContext) {
 		this.owners = clinicService;
 		this.visits = visits;
+		this.applicationContext = applicationContext;
+	}
+
+	@GetMapping("/bean")
+	@ResponseBody
+	public String bean() {
+		return "bean: " + applicationContext.getBean(OwnerRepository.class) + "\n" + "owners: " + this.owners;
+		//return "bean: " + this.applicationContext.getBean(OwnerController.class);
 	}
 
 	@InitBinder
@@ -56,6 +63,7 @@ class OwnerController {
 	}
 
 	@GetMapping("/owners/new")
+	@LogExecutionTime
 	public String initCreationForm(Map<String, Object> model) {
 		Owner owner = new Owner();
 		model.put("owner", owner);
@@ -131,15 +139,15 @@ class OwnerController {
 	 * @param ownerId the ID of the owner to display
 	 * @return a ModelMap with the model attributes for the view
 	 */
-	@GetMapping("/owners/{ownerId}")
-	public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
-		ModelAndView mav = new ModelAndView("owners/ownerDetails");
-		Owner owner = this.owners.findById(ownerId);
-		for (Pet pet : owner.getPets()) {
-			pet.setVisitsInternal(visits.findByPetId(pet.getId()));
-		}
-		mav.addObject(owner);
-		return mav;
-	}
+//	@GetMapping("/owners/{ownerId}")
+//	public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
+//		ModelAndView mav = new ModelAndView("owners/ownerDetails");
+//		Owner owner = this.owners.findById(ownerId);
+//		for (Pet pet : owner.getPets()) {
+//			pet.setVisitsInternal(visits.findByPetId(pet.getId()));
+//		}
+//		mav.addObject(owner);
+//		return mav;
+//	}
 
 }
